@@ -13,6 +13,14 @@ var storageTypes = {
 var defaultStorage = storageTypes[storageType];
 
 /*
+ * Module's settings and public API.
+ */
+Function.prototype.async = function() {
+  var args = Array.prototype.slice.call(arguments, 0);
+  setTimeout(this, 0, args);
+};
+
+/*
  * Goes through settings and make changes to module.
  *
  * @api private
@@ -20,20 +28,6 @@ var defaultStorage = storageTypes[storageType];
 (function parseSettings() {
   // Bail if it doesn't work, no fallback
   if (!storage.works) { storage = undefined; }
-
-  // Asynchronous settings
-  if (storage.async) {
-    Function.prototype.async = function() {
-      setTimeout(this, 0, arguments);
-    };
-  }
-  // Module's function is async be default
-  // This masks 'async' as a normal function call
-  else {
-    Function.prototype.async = function() {
-      this.apply(this, arguments);
-    };
-  }
 })();
 
 /*
@@ -74,7 +68,7 @@ function parseIfPossible(obj) {
     return JSON.parse(obj);
   }
   catch(e) {
-    return false;
+    return obj;
   }
 }
 
@@ -82,7 +76,7 @@ function parseIfPossible(obj) {
  * Attempt to stringify JSON.
  *
  * @return {String} if serializable
- * @return {Boolean} false, if JSON.stringify fails
+ * @return {Object || Array} false, if JSON.stringify fails
  * @api private
  */
 function stringifyIfPossible(obj) {
@@ -90,18 +84,29 @@ function stringifyIfPossible(obj) {
     return JSON.stringify(obj);
   }
   catch(e) {
-    return false;
+    return obj;
   }
 }
 
 storage.set = function (key, value) {
-  var stringifiedValue = stringifyIfPossible(value);
-  value = stringifiedValue ? stringifiedValue : value;
-  defaultStorage.set.async(key, value);
+  defaultStorage.setItem.async(key, stringifyIfPossible(value));
 };
 
-storage.get = function (key, value) {
-  var parsedValue = parseIfPossible(value);
-  value = parsedValue ? parsedValue : value;
-  defaultStorage.set.async(key, value);
+storage.setSync = function (key, value) {
+  defaultStorage.setItem(key, stringifyIfPossible(value));
+};
+
+storage.setMulti = function (keyValue) {
+  for (var key in keyValue) {
+    var value = keyValue[key];
+    storage.set(key, value);
+  }
+};
+
+storage.get = function (key) {
+  return parseIfPossible(defaultStorage.getItem.async(key));
+};
+
+storage.getSync = function (key) {
+  return parseIfPossible(defaultStorage.getItem(key));
 };
