@@ -4,21 +4,52 @@
 var storage = {
   storageType: 'localStorage',
   async: true,
-  works: storageSupported()
 };
+storage.works = storageSupported(storage.storageType);
 var storageTypes = {
   'localStorage': localStorage,
   'sessionStorage': sessionStorage
 };
-var defaultStorage = storageTypes[storageType];
+var defaultStorage = storageTypes[storage.storageType];
+
+/*
+ * Check browser support for storage
+ *
+ * @param {String} storageType
+ * @return {Boolean} support for storage
+ * @api private
+ */
+function storageSupported(storageType) {
+  try {
+    return storageType in window && window[storageType] !== null;
+  }
+  catch(e) {
+    return false;
+  }
+}
 
 /*
  * Module's settings and public API.
  */
-Function.prototype.async = function() {
-  var args = Array.prototype.slice.call(arguments, 0);
-  setTimeout(this, 0, args);
+Function.prototype.async = function () {
+  var args = Array.prototype.slice.call(arguments);
+  var func = this;  // to preserve the instance
+  setTimeout(function(){ func.apply(this, args); }, 0);
 };
+
+function add(x, y, callback) {
+  setTimeout(function () {
+    console.log('result: ' + (x+y));
+    callback('in timeout');
+  }, 2000);
+  callback('out of timeout');
+}
+
+function print(text) { console.log(text); }
+
+for (var i = 0; i < 5; i++) {
+  add.async(5, 6, print);
+}
 
 /*
  * Goes through settings and make changes to module.
@@ -29,22 +60,6 @@ Function.prototype.async = function() {
   // Bail if it doesn't work, no fallback
   if (!storage.works) { storage = undefined; }
 })();
-
-/*
- * Browser support for localStorage
- *
- * @return {Boolean} support for storage
- * @api private
- */
-function storageSupported() {
-  try {
-    var storageType = storage.storageType;
-    return storageType in window && window[storageType] !== null;
-  }
-  catch(e) {
-    return false;
-  }
-}
 
 /*
  * For JSON serialization
@@ -90,6 +105,7 @@ function stringifyIfPossible(obj) {
 
 storage.set = function (key, value) {
   defaultStorage.setItem.async(key, stringifyIfPossible(value));
+  //callback();
 };
 
 storage.setSync = function (key, value) {
@@ -103,8 +119,9 @@ storage.setMulti = function (keyValue) {
   }
 };
 
-storage.get = function (key) {
-  return parseIfPossible(defaultStorage.getItem.async(key));
+storage.get = function (key, callback) {
+  var value = parseIfPossible(defaultStorage.getItem.async(key));
+  callback(value);
 };
 
 storage.getSync = function (key) {
