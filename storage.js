@@ -22,8 +22,7 @@ var defaultStorage = storageTypes[storage.storageType];
 function storageSupported(storageType) {
   try {
     return storageType in window && window[storageType] !== null;
-  }
-  catch(e) {
+  } catch(e) {
     return false;
   }
 }
@@ -81,8 +80,7 @@ function isObject(obj) {
 function parseIfPossible(obj) {
   try {
     return JSON.parse(obj);
-  }
-  catch(e) {
+  } catch(e) {
     return obj;
   }
 }
@@ -97,8 +95,7 @@ function parseIfPossible(obj) {
 function stringifyIfPossible(obj) {
   try {
     return JSON.stringify(obj);
-  }
-  catch(e) {
+  } catch(e) {
     return obj;
   }
 }
