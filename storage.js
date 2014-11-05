@@ -30,14 +30,14 @@ function storageSupported(storageType) {
 /*
  * Module's settings and public API.
  */
-Function.prototype.async = function () {
+Function.prototype.async = function() {
   var args = Array.prototype.slice.call(arguments);
   var func = this;  // to preserve the instance
   setTimeout(function(){ func.apply(this, args); }, 0);
 };
 
 function add(x, y, callback) {
-  setTimeout(function () {
+  setTimeout(function() {
     console.log('result: ' + (x+y));
     callback('in timeout');
   }, 2000);
@@ -100,27 +100,27 @@ function stringifyIfPossible(obj) {
   }
 }
 
-storage.set = function (key, value) {
+storage.set = function(key, value) {
   defaultStorage.setItem.async(key, stringifyIfPossible(value));
   //callback();
 };
 
-storage.setSync = function (key, value) {
+storage.setSync = function(key, value) {
   defaultStorage.setItem(key, stringifyIfPossible(value));
 };
 
-storage.setMulti = function (keyValue) {
+storage.setMulti = function(keyValue) {
   for (var key in keyValue) {
     var value = keyValue[key];
     storage.set(key, value);
   }
 };
 
-storage.get = function (key, callback) {
+storage.get = function(key, callback) {
   var value = parseIfPossible(defaultStorage.getItem.async(key));
   callback(value);
 };
 
-storage.getSync = function (key) {
+storage.getSync = function(key) {
   return parseIfPossible(defaultStorage.getItem(key));
 };
