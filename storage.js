@@ -43,21 +43,29 @@ function storageSupported(storageType) {
 /*
  * Module's settings and public API.
  */
-function async(func) {
-  return (function() {
-    var args = Array.prototype.slice.call(arguments);
-    setTimeout(function(){
-      return func.apply(this, args);
-    }, 0);
-  });
-}
 
+/*
+ * Runs function asynchronously.
+ * 
+ * Usage:
+ * > async(localStorage.setItem)
+       .run('hello', 'world')
+       .done(function() { console.log('Item set!') });
+ * > var result = async(localStorage.getItem)
+ *     .run('hello').result;
+ *
+ * @param {Function} synchronous function
+ * @return {Object} asyncFunc
+ * @api private
+ */
 function async(func) {
   var NOTSTARTED = 0, PENDING = 1, SUCCESS = 2, FAIL = -1;
   var asyncFunc = {};
   asyncFunc.status = NOTSTARTED;
   asyncFunc.run = function doAsyncFunc() {
     var args = Array.prototype.slice.call(arguments);
+    var callback = args.splice(args.length-1, 1);
+    console.log(callback.toString());
     asyncFunc.status = PENDING;
     // Pushes it to background with 0ms delay
     setTimeout(function() {
@@ -73,21 +81,35 @@ function async(func) {
     // Runs continuously checking for status of asyncFunc
     // Runs after-task attached at asyncFunc.done
     var asyncFuncChecker = setInterval(function() {
-      if (asyncFunc.status === 2 || asyncFunc.status === -1) {
+      var status = asyncFunc.status;
+      if (status === SUCCESS || s === -1) {
         clearInterval(asyncFuncChecker);
         console.log('cleared');
-        asyncFunc.done = doAfterAsyncFunc;
+        asyncFunc = asyncFunc.result;
+        callback();
       }
     }, 0);
     // Attached to returned asyncFunc.done
-    function doAfterAsyncFunc(func) {
-      var args = Array.prototype.slice.call(arguments);
-      func.apply(this, args);
-    }
     return asyncFunc;
   };
   return asyncFunc;
 }
+function runCmd(cmd, args, callBack ) {
+  var spawn = require('child_process').spawn;
+  var child = spawn(cmd, args);
+  var resp = "";
+  child.stdout.on('data', function (buffer) { resp += buffer.toString(); });
+  child.stdout.on('end', function() { callBack(resp); });
+}
+
+function curlMultiple() {
+  var site = 'https://github.com/';
+  function print(text) { console.log(text); }
+  for (var i = 0; i < 100; i++) {
+    runCmd('curl ' + site, [], print);
+  }
+}
+
 /*
  * My playground
  */
@@ -149,17 +171,10 @@ function stringifyIfPossible(obj) {
   }
 }
 
-
-storage.set = function(key, value, callback) {
+storage.set = function setStorage(key, value, callback) {
   value = stringifyIfPossible(value);
-  async(setItem)(key, value);
-  var func_finished;
-  var resultChecker = setInterval(function() {
-    func_finished = localStorage[key];
-    if (func_finished) {
-      clearInterval(resultChecker);
-      if (callback) callback();
-    }
+  var s = async(setItem).run(key, value, function(){
+    callback();
   });
 };
 
