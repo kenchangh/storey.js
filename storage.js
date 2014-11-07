@@ -51,22 +51,50 @@ function async(func) {
     }, 0);
   });
 }
-  
+
+function async(func) {
+  var NOTSTARTED = 0, PENDING = 1, SUCCESS = 2, FAIL = -1;
+  var asyncFunc = {};
+  asyncFunc.status = NOTSTARTED;
+  asyncFunc.run = function doAsyncFunc() {
+    var args = Array.prototype.slice.call(arguments);
+    asyncFunc.status = PENDING;
+    // Pushes it to background with 0ms delay
+    setTimeout(function() {
+      try {
+        var result = func.apply(this, args);
+        asyncFunc.status = SUCCESS;
+        asyncFunc.result = result;
+      } catch(e) {
+        asyncFunc.status = FAIL;
+        asyncFunc.error = e;
+      }
+    }, 0);
+    // Runs continuously checking for status of asyncFunc
+    // Runs after-task attached at asyncFunc.done
+    var asyncFuncChecker = setInterval(function() {
+      if (asyncFunc.status === 2 || asyncFunc.status === -1) {
+        clearInterval(asyncFuncChecker);
+        console.log('cleared');
+        asyncFunc.done = doAfterAsyncFunc;
+      }
+    }, 0);
+    // Attached to returned asyncFunc.done
+    function doAfterAsyncFunc(func) {
+      var args = Array.prototype.slice.call(arguments);
+      func.apply(this, args);
+    }
+    return asyncFunc;
+  };
+  return asyncFunc;
+}
 /*
  * My playground
  */
-function add(x, y, callback) {
-  function longFunction(callback) {
-    setTimeout(function() {
-      console.log('long task done');
-    }, 3000);
-  }
-  var resultChecker = setInterval(function() {
-    if (result) {
-      clearInterval(resultChecker);
-      callback('Result is ' + result);
-    }
-  });
+function add(x, y) {
+  setTimeout(function() {
+    console.log('result: ' + (x+y));
+  }, 3000);
 }
 
 function print(text) { console.log(text); }
@@ -156,10 +184,10 @@ storage.setMulti = function(keyValue, callback) {
     i = 0,
     end = keys.length,
     size = objectSize(keyValue),
-    empty_func = (function() {});
+    emptyFunc = (function() {});
   for(keys, i, end; i < end; i++) {
     var key = keys[i], value = keyValue[key];
-    storage.set(key, value, empty_func);
+    storage.set(key, value, emptyFunc);
     checkResult(key);
   }
 
@@ -183,6 +211,13 @@ storage.get = function(key, callback) {
       callback(value);
     }
   });
+};
+
+storage.getMulti = function(keys, callback) {
+  var emptyFunc = (function(){});
+  for (var i = 0; i < keys.length; i++) {
+    
+  }
 };
 
 storage.getSync = function(key) {
