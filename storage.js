@@ -24,6 +24,7 @@ var storageTypes = {
 var defaultStorage = storageTypes[storage.storageType];
 var setItem = defaultStorage.setItem.bind(defaultStorage);
 var getItem = defaultStorage.getItem.bind(defaultStorage);
+var removeItem = defaultStorage.removeItem.bind(defaultStorage);
 
 /*
  * Check browser support for storage
@@ -49,10 +50,9 @@ function storageSupported(storageType) {
  * 
  * Usage:
  * > async(localStorage.setItem)
-       .run('hello', 'world')
-       .done(function() { console.log('Item set!') });
+       .run('hello', 'world', function() {})
  * > var result = async(localStorage.getItem)
- *     .run('hello').result;
+ *     .run('hello', function(value){console.log(result)});
  *
  * @param {Function} synchronous function
  * @return {Object} asyncFunc
@@ -143,6 +143,17 @@ function stringifyIfPossible(obj) {
   }
 }
 
+/*
+ * Wrapper function for localStorage.setItem
+ * which is asynchronous and deserializes to string.
+ * Callback accepts no parameters.
+ *
+ * @param {String} key
+ * @param {Object} value
+ * @param {Function} clean up callback function
+ * @return {Object} asyncFunc instance
+ * @api public
+ */
 storage.set = function setStorage(key, value, callback) {
   value = stringifyIfPossible(value);
   async(setItem).run(key, value, function(){
@@ -150,10 +161,26 @@ storage.set = function setStorage(key, value, callback) {
   });
 };
 
+/*
+ * Wrapper function for localStorage.setItem
+ * which just deserializes to string.
+ *
+ * @param {String} key
+ * @param {Object} value
+ * @api public
+ */
 storage.setSync = function(key, value) {
   defaultStorage.setItem(key, stringifyIfPossible(value));
 };
 
+/*
+ * Iterates through keyValue Object and does storage.set.
+ * Callback accepts no parameters.
+ *
+ * @param {Object} keyValue
+ * @param {Function} clean up callback function
+ * @api public
+ */
 storage.setMulti = function(keyValue, callback) {
   var keys = Object.keys(keyValue);
   var counter = 0;
@@ -171,16 +198,42 @@ storage.setMulti = function(keyValue, callback) {
   }, 0);
 };
 
+/*
+ * Wrapper function for localStorage.getItem
+ * which is asynchronous and serializes to JSON.
+ * Callback accepts value as parameter.
+ *
+ * @param {String} key
+ * @param {Function} callback with value passed
+ * @return {Object} asyncFunc instance
+ * @api public
+ */
 storage.get = function getStorage(key, callback) {
   async(getItem).run(key, function(value) {
     callback(parseIfPossible(value));
   });
 };
 
+/*
+ * Wrapper function for localStorage.setItem
+ * which just deserializes to string.
+ *
+ * @param {String} key
+ * @param {Object} value
+ * @api public
+ */
 storage.getSync = function(key) {
   return parseIfPossible(defaultStorage.getItem(key));
 };
 
+/*
+ * Iterates through keys and does storage.get.
+ * Callback accepts array of values as parameter.
+ *
+ * @param {Array} keys
+ * @param {Function} callback passed with array of values
+ * @api public
+ */
 storage.getMulti = function getMultiStorage(keys, callback) {
   var values = [];
   function rememberValue(value) {
