@@ -137,7 +137,7 @@ function stringifyIfPossible(obj) {
 storage.set = function setStorage(key, value, callback) {
   value = stringifyIfPossible(value);
   async(setItem).run(key, value, function(){
-    callback();
+    if (callback) callback();
   });
 };
 
@@ -173,7 +173,7 @@ storage.setMulti = function(keyValue, callback) {
   var counterChecker = setInterval(function() {
     if (counter === keys.length) {
       clearInterval(counterChecker);
-      callback();
+      if (callback) callback();
     }
   }, 0);
 };
@@ -294,7 +294,7 @@ var MAX_SIZE = 1024 * 1024 * 5;  // 5 MB is default size of storage
  *
  * @api public
  */
-storage.size = (function getStorageSize(callback) {
+storage.size = function getStorageSize() {
   var keys = Object.keys(defaultStorage);
   var keysLength = keys.join('').length;
   var value, values = [];
@@ -304,7 +304,7 @@ storage.size = (function getStorageSize(callback) {
   }
   var valuesLength = values.join('').length;
   return keysLength + valuesLength;
-})();
+};
 
 /*
  * Performs subtraction between MAX_SIZE and storage.size
@@ -312,4 +312,6 @@ storage.size = (function getStorageSize(callback) {
  *
  * @api public
  */
-storage.left = MAX_SIZE - storage.size;
+storage.left = function getStorageLeft() {
+  return MAX_SIZE - this.size();
+};
