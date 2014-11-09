@@ -31,7 +31,10 @@ function storageSupported(storageType) {
 }
 
 /*
- * Module's settings and public API.
+ * Functions for accessing storage:
+ * get, getSync, getMulti
+ * set, setSync, setMulti
+ * remove, removeSync, removeMulti 
  */
 
 /*
@@ -279,6 +282,11 @@ storage.removeMulti = function removeMultiStorage(keys, callback) {
     }
   });
 };
+
+/*
+ * Functions for space management:
+ * size, left
+ */
 
 var MAX_SIZE = 1024 * 1024 * 5;  // 5 MB is default size of storage
 
