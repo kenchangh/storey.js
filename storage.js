@@ -93,16 +93,6 @@ function async(func) {
 })();
 
 /*
- * For JSON serialization
- */
-function isArray(obj) {
-  return toString.call(obj) === '[object Array]';
-}
-function isObject(obj) {
-  return toString.call(obj) === '[object Object]';
-}
-
-/*
  * Attempt to parse string for JSON.
  *
  * @return {Object || Array} if JSON
@@ -226,7 +216,7 @@ storage.getSync = function(key) {
 storage.getMulti = function getMultiStorage(keys, callback) {
   var values = [];
   function rememberValue(value) {
-    values.push(value);
+    values.push(parseIfPossible(value));
   }
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
@@ -287,5 +277,41 @@ storage.removeMulti = function removeMultiStorage(keys, callback) {
       clearInterval(counterChecker);
       callback();
     }
+  });
+};
+
+var MAX_SIZE = 1024 * 1024 * 5;  // 5 MB is default size of storage
+
+/*
+ * Iterates through keys and values, records their lengths.
+ * Callback accepts totalLength as param.
+ *
+ * @param {Function} callback
+ *   @param {Number} totalLength
+ * @api public
+ */
+storage.size = function storageSize(callback) {
+  var keys = Object.keys(defaultStorage);
+  var keysLength = keys.join('').length;
+  storage.getMulti(keys, function(values) {
+    values = values.map(stringifyIfPossible);
+    var valuesLength = values.join('').length;
+    var totalLength = keysLength + valuesLength;
+    callback(totalLength);
+  });
+};
+
+/*
+ * Performs subtraction between MAX_SIZE and storage.size
+ * Callback accepts storage left as param
+ *
+ * @param {Function} callback
+ *   @param {Number} sizeLeft
+ * @api public
+ */
+storage.left = function storageLeft(callback) {
+  var result;
+  storage.size(function(totalSize) {
+    callback(MAX_SIZE - totalSize);
   });
 };
