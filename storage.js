@@ -129,8 +129,7 @@ function stringifyIfPossible(obj) {
  *
  * @param {String} key
  * @param {Object} value
- * @param {Function} clean up callback function
- * @return {Object} asyncFunc instance
+ * @param {Function} callback
  * @api public
  */
 storage.set = function setStorage(key, value, callback) {
@@ -157,7 +156,7 @@ storage.setSync = function(key, value) {
  * Callback accepts no parameters.
  *
  * @param {Object} keyValue
- * @param {Function} clean up callback function
+ * @param {Function} callback
  * @api public
  */
 storage.setMulti = function(keyValue, callback) {
@@ -184,7 +183,7 @@ storage.setMulti = function(keyValue, callback) {
  *
  * @param {String} key
  * @param {Function} callback with value passed
- * @return {Object} asyncFunc instance
+ *   @param {Object} value
  * @api public
  */
 storage.get = function getStorage(key, callback) {
@@ -210,7 +209,8 @@ storage.getSync = function(key) {
  * Callback accepts array of values as parameter.
  *
  * @param {Array} keys
- * @param {Function} callback passed with array of values
+ * @param {Function} callback
+ *   @param {Array} values
  * @api public
  */
 storage.getMulti = function getMultiStorage(keys, callback) {
