@@ -1,15 +1,4 @@
 /*
- * Some monkey patching and utility functions.
- */
-function objectSize(obj) {
-  var size = 0, key;
-  for (key in obj) {
-      if (obj.hasOwnProperty(key)) size++;
-  }
-  return size;
-}
-
-/*
  * Module's settings and public API.
  */
 var storage = {
@@ -243,10 +232,60 @@ storage.getMulti = function getMultiStorage(keys, callback) {
     var key = keys[i];
     storage.get(key, rememberValue);
   }
+  // Continuously check for function completion
   var counterChecker = setInterval(function() {
     if (values.length === keys.length) {
       clearInterval(counterChecker);
       callback(values);
     }
   }, 0);
+};
+
+/*
+ * Wrapper function for localStorage.removeItem
+ * which is asynchronous.
+ * Callback takes no parameters.
+ *
+ * @param {String} key
+ * @param {Function} callback
+ * @api public
+ */
+storage.remove = function removeStorage(key, callback) {
+  async(removeItem).run(key, function() {
+    callback();
+  });
+};
+
+/*
+ * Wrapper function for localStorage.removeItem
+ * which is behaves exactly the same.
+ *
+ * @param {String} key
+ * @api public
+ */
+storage.removeSync = function removeSyncStorage(key) {
+  defaultStorage.removeItem(key);
+};
+
+/*
+ * Iterates through keys and does storage.remove.
+ * Callback accepts array of values as parameter.
+ *
+ * @param {Array} keys
+ * @param {Function} callback
+ * @api public
+ */
+storage.removeMulti = function removeMultiStorage(keys, callback) {
+  var counter = 0;
+  function incrementCounter() { counter++; }
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    storage.remove(key, incrementCounter);
+  }
+  var counterChecker = setInterval(function() {
+    if (counter === keys.length) {
+      clearInterval(counterChecker);
+      callback();
+    }
+  });
 };
