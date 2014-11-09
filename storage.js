@@ -64,29 +64,27 @@ function async(func) {
   asyncFunc.status = NOTSTARTED;
   asyncFunc.run = function doAsyncFunc() {
     var args = Array.prototype.slice.call(arguments);
-    var callback = args.splice(args.length-1, 1);
-    console.log(callback.toString());
+    var callback = args.pop();
     asyncFunc.status = PENDING;
     // Pushes it to background with 0ms delay
-    setTimeout(function() {
+    var funcToBackground = setTimeout(function() {
       try {
         var result = func.apply(this, args);
         asyncFunc.status = SUCCESS;
         asyncFunc.result = result;
       } catch(e) {
         asyncFunc.status = FAIL;
-        asyncFunc.error = e;
+        asyncFunc.result = e;
       }
     }, 0);
     // Runs continuously checking for status of asyncFunc
     // Runs after-task attached at asyncFunc.done
     var asyncFuncChecker = setInterval(function() {
       var status = asyncFunc.status;
-      if (status === SUCCESS || s === -1) {
+      if (status === SUCCESS || status === FAIL) {
         clearInterval(asyncFuncChecker);
         console.log('cleared');
-        asyncFunc = asyncFunc.result;
-        callback();
+        callback(asyncFunc.result);
       }
     }, 0);
     // Attached to returned asyncFunc.done
@@ -94,32 +92,6 @@ function async(func) {
   };
   return asyncFunc;
 }
-function runCmd(cmd, args, callBack ) {
-  var spawn = require('child_process').spawn;
-  var child = spawn(cmd, args);
-  var resp = "";
-  child.stdout.on('data', function (buffer) { resp += buffer.toString(); });
-  child.stdout.on('end', function() { callBack(resp); });
-}
-
-function curlMultiple() {
-  var site = 'https://github.com/';
-  function print(text) { console.log(text); }
-  for (var i = 0; i < 100; i++) {
-    runCmd('curl ' + site, [], print);
-  }
-}
-
-/*
- * My playground
- */
-function add(x, y) {
-  setTimeout(function() {
-    console.log('result: ' + (x+y));
-  }, 3000);
-}
-
-function print(text) { console.log(text); }
 
 /*
  * Goes through settings and make changes to module.
@@ -173,7 +145,7 @@ function stringifyIfPossible(obj) {
 
 storage.set = function setStorage(key, value, callback) {
   value = stringifyIfPossible(value);
-  var s = async(setItem).run(key, value, function(){
+  async(setItem).run(key, value, function(){
     callback();
   });
 };
@@ -183,58 +155,45 @@ storage.setSync = function(key, value) {
 };
 
 storage.setMulti = function(keyValue, callback) {
-  var totalResults = 0;
-  function checkResult(key) {
-    var setFinished;
-    var resultChecker = setInterval(function() {
-      setFinished = localStorage[key];
-      if (setFinished) {
-        clearInterval(resultChecker);
-        totalResults++;
-      }
-    });
+  var keys = Object.keys(keyValue);
+  var counter = 0;
+  function incrementCounter() { counter++; }
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    var value = keyValue[key];
+    storage.set(key, value, incrementCounter);
   }
-
-  var keys = Object.keys(keyValue),
-    i = 0,
-    end = keys.length,
-    size = objectSize(keyValue),
-    emptyFunc = (function() {});
-  for(keys, i, end; i < end; i++) {
-    var key = keys[i], value = keyValue[key];
-    storage.set(key, value, emptyFunc);
-    checkResult(key);
-  }
-
-  var allResultChecker = setInterval(function() {
-    if (totalResults === keys.length-1) {
-      clearInterval(allResultChecker);
+  var counterChecker = setInterval(function() {
+    if (counter === keys.length) {
+      clearInterval(counterChecker);
       callback();
     }
-  });
+  }, 0);
 };
 
-storage.get = function(key, callback) {
-  var value;
-  function _getItem(key) {
-    value = getItem(key);
-  }
-  parseIfPossible(async(_getItem)(key));
-  var resultChecker = setInterval(function() {
-    if (value) {
-      clearInterval(resultChecker);
-      callback(value);
-    }
+storage.get = function getStorage(key, callback) {
+  async(getItem).run(key, function(value) {
+    callback(parseIfPossible(value));
   });
-};
-
-storage.getMulti = function(keys, callback) {
-  var emptyFunc = (function(){});
-  for (var i = 0; i < keys.length; i++) {
-    
-  }
 };
 
 storage.getSync = function(key) {
   return parseIfPossible(defaultStorage.getItem(key));
+};
+
+storage.getMulti = function getMultiStorage(keys, callback) {
+  var values = [];
+  function rememberValue(value) {
+    values.push(value);
+  }
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    storage.get(key, rememberValue);
+  }
+  var counterChecker = setInterval(function() {
+    if (values.length === keys.length) {
+      clearInterval(counterChecker);
+      callback(values);
+    }
+  }, 0);
 };
