@@ -75,7 +75,6 @@ function async(func) {
       var status = asyncFunc.status;
       if (status === SUCCESS || status === FAIL) {
         clearInterval(asyncFuncChecker);
-        console.log('cleared');
         callback(asyncFunc.result);
       }
     }, 0);
@@ -98,8 +97,8 @@ function async(func) {
 /*
  * Attempt to parse string for JSON.
  *
- * @return {Object || Array} if JSON
- * @return {Boolean} false, if JSON.parse fails
+ * @return {String} if not JSON
+ * @return {Object} if able to JSON.parse
  * @api private
  */
 function parseIfPossible(obj) {
@@ -114,7 +113,7 @@ function parseIfPossible(obj) {
  * Attempt to stringify JSON.
  *
  * @return {String} if serializable
- * @return {Object || Array} false, if JSON.stringify fails
+ * @return {Object} if JSON.stringify fails
  * @api private
  */
 function stringifyIfPossible(obj) {
@@ -292,34 +291,25 @@ var MAX_SIZE = 1024 * 1024 * 5;  // 5 MB is default size of storage
 
 /*
  * Iterates through keys and values, records their lengths.
- * Callback accepts totalLength as param.
  *
- * @param {Function} callback
- *   @param {Number} totalLength
  * @api public
  */
-storage.size = function storageSize(callback) {
+storage.size = (function getStorageSize(callback) {
   var keys = Object.keys(defaultStorage);
   var keysLength = keys.join('').length;
-  storage.getMulti(keys, function(values) {
-    values = values.map(stringifyIfPossible);
-    var valuesLength = values.join('').length;
-    var totalLength = keysLength + valuesLength;
-    callback(totalLength);
-  });
-};
+  var value, values = [];
+  for (var i = 0; i < keys.length; i++) {
+    value = defaultStorage.getItem(keys[i]);
+    values.push(value);
+  }
+  var valuesLength = values.join('').length;
+  return keysLength + valuesLength;
+})();
 
 /*
  * Performs subtraction between MAX_SIZE and storage.size
  * Callback accepts storage left as param
  *
- * @param {Function} callback
- *   @param {Number} sizeLeft
  * @api public
  */
-storage.left = function storageLeft(callback) {
-  var result;
-  storage.size(function(totalSize) {
-    callback(MAX_SIZE - totalSize);
-  });
-};
+storage.left = MAX_SIZE - storage.size;
