@@ -288,6 +288,14 @@ storage.removeMulti = function removeMultiStorage(keys, callback) {
   });
 };
 
+/*
+ * Checks asynchronously if key exists.
+ *
+ * @param {Array} key
+ * @param {Function} callback
+ *   @param {Boolean} hasValue
+ * @api public
+ */
 storage.has = function inStorage(key, callback) {
   async(getItem).run(key, function(value) {
     var hasValue = !(value === undefined || value === null);
@@ -295,10 +303,18 @@ storage.has = function inStorage(key, callback) {
   });
 };
 
-storage.forEach = function forEach(keys, func, callback) {
-  var values, keyValue;
-  storage.getMulti(keys, function(_values) {
-    values = _values;
+/*
+ * Runs function on each storage item asynchronously.
+ *
+ * @param {Array} key
+ * @param {Function} callback
+ *   @param {Boolean} hasValue
+ * @api public
+ */
+storage.forEach = function forEach(keys, func) {
+  var newValues, keyValue;
+  storage.getMulti(keys, function(values) {
+    values = doToEachItem(values, func);
     keyValue = constructKeyValue(keys, values);
     storage.setMulti(keyValue); // callback not compulsory here
   });
@@ -359,4 +375,5 @@ storage.left = function getStorageLeft() {
 };
 
 window.storage = storage;
+
 })();  // storage encapsulation
