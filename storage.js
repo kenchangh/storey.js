@@ -1,4 +1,10 @@
 /*
+ * Author: Maverick Chan
+ * License: MIT License
+ */
+
+(function() {
+/*
  * Module's settings and public API.
  */
 var storage = {
@@ -29,13 +35,6 @@ function storageSupported(storageType) {
     return false;
   }
 }
-
-/*
- * Functions for accessing storage:
- * get, getSync, getMulti
- * set, setSync, setMulti
- * remove, removeSync, removeMulti 
- */
 
 /*
  * Runs function asynchronously.
@@ -123,6 +122,13 @@ function stringifyIfPossible(obj) {
     return obj;
   }
 }
+
+/*
+ * Functions for accessing storage:
+ * get, getSync, getMulti
+ * set, setSync, setMulti
+ * remove, removeSync, removeMulti 
+ */
 
 /*
  * Wrapper function for localStorage.setItem
@@ -282,6 +288,42 @@ storage.removeMulti = function removeMultiStorage(keys, callback) {
   });
 };
 
+storage.has = function inStorage(key, callback) {
+  async(getItem).run(key, function(value) {
+    var hasValue = !(value === undefined || value === null);
+    callback(hasValue);
+  });
+};
+
+storage.forEach = function forEach(keys, func, callback) {
+  var values, keyValue;
+  storage.getMulti(keys, function(_values) {
+    values = _values;
+    keyValue = constructKeyValue(keys, values);
+    storage.setMulti(keyValue); // callback not compulsory here
+  });
+
+  // constructKeyValue([1, 2, 3], [2, 3, 4])
+  // => {1: 2, 2: 3, 3: 4}
+  function constructKeyValue(keys, values) {
+    var keyValue = {};
+    for (var i = 0; i < keys.length; i++) {
+      keyValue[keys[i]] = values[i];
+    }
+    return keyValue;
+  }
+
+  // doToEachItem([1, 2, 3], function(x) {return x*2})
+  // => [2, 4, 6]
+  function doToEachItem(array, func) {
+    for (var i = 0; i < array.length; i++) {
+      // Run function and change in place
+      array[i] = func(array[i]);
+    }
+    return array;
+  }
+};
+
 /*
  * Functions for space management:
  * size, left
@@ -315,3 +357,6 @@ storage.size = function getStorageSize() {
 storage.left = function getStorageLeft() {
   return MAX_SIZE - this.size();
 };
+
+window.storage = storage;
+})();  // storage encapsulation
