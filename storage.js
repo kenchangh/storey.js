@@ -191,11 +191,12 @@ storage.setMulti = function(keyValue, callback) {
  *
  * @param {String} key
  * @param {Function} callback with value passed
- *   @param {Object} value
+ *   @param {Object} value (null if not present)
  * @api public
  */
 storage.get = function getStorage(key, callback) {
   async(getItem).run(key, function(value) {
+    // null if not present
     callback(parseIfPossible(value));
   });
 };
@@ -289,21 +290,6 @@ storage.removeMulti = function removeMultiStorage(keys, callback) {
 };
 
 /*
- * Checks asynchronously if key exists.
- *
- * @param {Array} key
- * @param {Function} callback
- *   @param {Boolean} hasValue
- * @api public
- */
-storage.has = function inStorage(key, callback) {
-  async(getItem).run(key, function(value) {
-    var hasValue = !(value === undefined || value === null);
-    callback(hasValue);
-  });
-};
-
-/*
  * Runs function on each storage item asynchronously.
  *
  * @param {Array} key
@@ -314,8 +300,8 @@ storage.has = function inStorage(key, callback) {
 storage.forEach = function forEach(keys, func) {
   var newValues, keyValue;
   storage.getMulti(keys, function(values) {
-    values = doToEachItem(values, func);
-    keyValue = constructKeyValue(keys, values);
+    newValues = values.forEach(func);
+    keyValue = constructKeyValue(keys, newValues);
     storage.setMulti(keyValue); // callback not compulsory here
   });
 
@@ -327,16 +313,6 @@ storage.forEach = function forEach(keys, func) {
       keyValue[keys[i]] = values[i];
     }
     return keyValue;
-  }
-
-  // doToEachItem([1, 2, 3], function(x) {return x*2})
-  // => [2, 4, 6]
-  function doToEachItem(array, func) {
-    for (var i = 0; i < array.length; i++) {
-      // Run function and change in place
-      array[i] = func(array[i]);
-    }
-    return array;
   }
 };
 
