@@ -90,7 +90,7 @@ function async(func) {
  */
 (function parseSettings() {
   // Bail if it doesn't work, no fallback
-  if (!storage.works) { storage = undefined; }
+  if (!storage.works) storage = undefined;
 })();
 
 /*
@@ -352,4 +352,4 @@ storage.left = function getStorageLeft() {
 
 window.storage = storage;
 
-})();  // storage encapsulation
+})();  // storage.js encapsulation
