@@ -206,7 +206,6 @@ describe('#forEach()', function() {
       c: 3
     });
     storey.forEach(function(value) {
-      done();
       return value * 2;
     });
     storey.getMulti(['a', 'b', 'c'], function(values) {
@@ -214,13 +213,16 @@ describe('#forEach()', function() {
       values[1].should.be.equal(4);
       values[2].should.be.equal(6);
     });
+    done();
   });
 });
 
 // lame tests for size
-describe('#left()', function() {
-  it('should be 500 MB - storey.size()', function() {
-    var MAX_SIZE = 1024 * 1024 * 5;
-    storey.left().should.be.equal(MAX_SIZE - storey.size());
+describe('#size()', function() {
+  it('should be a number', function(done) {
+    storey.size(function(size) {
+      size.should.be.a.Number;
+      done();
+    });
   });
 });

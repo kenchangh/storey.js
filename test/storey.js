@@ -326,19 +326,29 @@ var MAX_SIZE = 1024 * 1024 * 5;  // 5 MB is default size of storage
 
 /*
  * Iterates through keys and values, records their lengths.
- *
+ * An asynchronous function.
+ * 
+ * @param {Function} callback
+ *   @param {Number} storageSize
  * @api public
  */
-storage.size = function getStorageSize() {
+storage.size = function getStorageSize(callback) {
   var keys = Object.keys(defaultStorage);
   var keysLength = keys.join('').length;
   var value, values = [];
   for (var i = 0; i < keys.length; i++) {
-    value = defaultStorage.getItem(keys[i]);
-    values.push(value);
+    // localize 'i' into the function
+    (function(i) {
+      async(getItem).run(keys[i], function(value) {
+        values.push(value);
+        if (values.length === keys.length &&
+          typeof callback === 'function') {
+          var valuesLength = values.join('').length;
+          callback(keysLength + valuesLength);
+        }
+      });
+    })(i);
   }
-  var valuesLength = values.join('').length;
-  return keysLength + valuesLength;
 };
 
 /*
@@ -347,8 +357,10 @@ storage.size = function getStorageSize() {
  *
  * @api public
  */
-storage.left = function getStorageLeft() {
-  return MAX_SIZE - this.size();
+storage.left = function getStorageLeft(callback) {
+  storage.size(function(storageSize) {
+    callback(MAX_SIZE - storageSize);
+  });
 };
 
 window.storey = storage;
