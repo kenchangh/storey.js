@@ -1,12 +1,12 @@
 storey.js
 =========
 
-**This project is still under development. storey.js is developed to be used in [cargo.js](https://github.com/mavenave/storey.js).**
+**This project is still under development. storey.js is developed to be used in [cargo.js](https://github.com/mavenave/cargo.js).**
 
 storey.js is a bunch of wrapper functions that make DOM / Web Storage **safer** and **better** to use.
 
 Some of the key features of storey.js:
- - Asynchronous wrappers over storage transactions
+ - Asynchronous wrappers over Storage transactions
  - Serializes / deserializes to string (less shit work for you)
  - Minimal, no dependencies and fallbacks (most browsers support Web Storage already)
 
@@ -15,8 +15,7 @@ API Reference
 
 **storey.set(key, value, [callback])**
 
-Asynchronously sets a `value` with `key` in storage. `key` must be a string.
-The `callback` is optional, without parameters.
+Asynchronously sets a `key` to `value` in storage. `key` must be a string. The `callback` is optional, without parameters.
 
 **storey.setSync(key, value)**
 
@@ -24,8 +23,7 @@ Synchronously sets a `value` with `key` in storage.
 
 **storey.setMulti(keyValue, [callback])**
 
-Asynchronously sets an Object of `keys` to `values`.
-`callback is optional, without parameters.
+Asynchronously sets an Object `keyValue`. `keyValue` is defined below in the example. `callback` is optional, without parameters.
 
 ```javascript
 var keyValue = {
@@ -39,7 +37,7 @@ storage.setMulti(keyValue, function() {
 
 **storey.get(key, callback)**
 
-Asynchronously gets a `key`. `callback` is called with `value` parameter.
+Asynchronously gets a `key`. `callback` is filled with `value` parameter.
 ```javascript
 storey.get('key', function(value) {
   console.log(value); // do something with value
@@ -53,7 +51,7 @@ Synchronously gets the value of `key`.
 **storey.getMulti(keys, callback)**
 
 Asynchronously gets an Array of values by using a `keys` Array.
-`callback` has `values` as parameter.
+`callback` has Array `values` as parameter.
 
 ```javascript
 var keys = ['hello', 'foo'];
