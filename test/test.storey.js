@@ -1,8 +1,3 @@
-// What happens to falsey values?
-// undefined => error
-// NaN       => null
-// null      => null
-
 // Not supported objects/types:
 //  undefined, null, NaN, functions (can be .toStringed)
 var testSubjects = {
@@ -168,5 +163,39 @@ describe('#removeMulti()', function() {
   });
 });
 
-// Clears up every time
-// localStorage.clear();
+describe('Not in storage', function() {
+  it('should return null', function(done) {
+    storey.get('some unknown key', function(value) {
+      (value === null).should.be.true;
+    });
+    done();
+  });
+});
+
+describe('#clear()', function() {
+  it('should clear perfectly', function(done) {
+    storey.clear();
+    done();
+  });
+  // this clears out storage
+  // and all is left for 'null' to be returned
+  it('should only return null', function(done) {
+    var types = Object.keys(testSubjects);
+    for (var i = 0; i < types.length; i++) {
+      (function(i) {
+        var type = types[i];
+        storey.get(type, function(value) {
+          (value === null).should.be.true;
+        });
+      })(i);
+    }
+    done();
+  });
+});
+
+// for callbacks, this check is sufficient:
+// if (typeof callback === 'function') callback();
+
+describe('#forEach()', function() {
+  storage.set()
+});

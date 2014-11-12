@@ -20,6 +20,7 @@ var defaultStorage = storageTypes[storage.storageType];
 var setItem = defaultStorage.setItem.bind(defaultStorage);
 var getItem = defaultStorage.getItem.bind(defaultStorage);
 var removeItem = defaultStorage.removeItem.bind(defaultStorage);
+var clearStorage = defaultStorage.clear.bind(defaultStorage);
 
 /*
  * Check browser support for storage
@@ -144,7 +145,7 @@ function stringifyIfPossible(obj) {
 storage.set = function setStorage(key, value, callback) {
   value = stringifyIfPossible(value);
   async(setItem).run(key, value, function(){
-    if (callback) callback();
+    if (typeof callback === 'function') callback();
   });
 };
 
@@ -173,7 +174,8 @@ storage.setMulti = function(keyValue, callback) {
   var counter = 0;
   function incrementCounter() {
     counter++;
-    if (counter === keys.length) callback();
+    if (counter === keys.length &&
+      typeof callback === 'function') callback();
   }
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
@@ -246,7 +248,7 @@ storage.getMulti = function getMultiStorage(keys, callback) {
  */
 storage.remove = function removeStorage(key, callback) {
   async(removeItem).run(key, function() {
-    callback();
+    if (typeof callback === 'function') callback();
   });
 };
 
@@ -273,12 +275,19 @@ storage.removeMulti = function removeMultiStorage(keys, callback) {
   var counter = 0;
   function incrementCounter() {
     counter++;
-    if (counter === keys.length) callback();
+    if (counter === keys.length &&
+      typeof callback === 'function') callback();
   }
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
     storage.remove(key, incrementCounter);
   }
+};
+
+storage.clear = function asyncClearStorage(callback) {
+  async(clearStorage).run(function() {
+    if (typeof callback === 'function') callback();
+  });
 };
 
 /*
