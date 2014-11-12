@@ -78,7 +78,7 @@ Caution! Approaching danger! Asynchronously clears up Web Storage.
 
 **storey.has(key, callback)**
 
-Purely a syntactic sugar for checking presence of `key`. Equivalent to `storage.get`.
+Purely a syntactic sugar for checking presence of `key`. Equivalent to `storey.get`.
 
 **storey.has()**
 
