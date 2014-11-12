@@ -1,0 +1,25 @@
+{
+  "name": "storey.js",
+  "version": "0.0.0",
+  "description": "Asynchronous DOM storage with a minimalistic API",
+  "keywords": [
+    "asynchronous storage",
+    "DOM storage",
+    "localStorage",
+    "web storage"
+  ],
+  "main": "storey.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mavenave/asyncStore.git"
+  },
+  "author": {
+    "name": "Maverick Chan",
+    "email": "guanhao3797@gmail.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mavenave/asyncStore/issues"
+  },
+  "homepage": "https://github.com/mavenave/asyncStore"
+}
