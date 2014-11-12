@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>storey.js by mavenave</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>storey.js</h1>
+          <h2>Asynchronous, minimalistic wrapper for Web Storage API</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/mavenave/storey.js/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/mavenave/storey.js/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/mavenave/storey.js" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a id="storeyjs" class="anchor" href="#storeyjs" aria-hidden="true"><span class="octicon octicon-link"></span></a>storey.js</h1>
+
+<p><strong>This project is still under development. storey.js is developed to be used in <a href="https://github.com/mavenave/cargo.js">cargo.js</a>.</strong></p>
+
+<p>storey.js is a bunch of wrapper functions that make DOM / Web Storage <strong>safer</strong> and <strong>better</strong> to use.</p>
+
+<p>Some of the key features of storey.js:</p>
+
+<ul>
+<li>Asynchronous wrappers over Storage transactions</li>
+<li>Serializes / deserializes to string (less shit work for you)</li>
+<li>Minimal, no dependencies and fallbacks (most browsers support Web Storage already)</li>
+</ul>
+
+<h2>
+<a id="api-reference" class="anchor" href="#api-reference" aria-hidden="true"><span class="octicon octicon-link"></span></a>API Reference</h2>
+
+<p><strong>storey.set(key, value, [callback])</strong></p>
+
+<p>Asynchronously sets a <code>key</code> to <code>value</code> in storage. <code>key</code> must be a string. The <code>callback</code> is optional, without parameters.</p>
+
+<p><strong>storey.setSync(key, value)</strong></p>
+
+<p>Synchronously sets a <code>value</code> with <code>key</code> in storage.</p>
+
+<p><strong>storey.setMulti(keyValue, [callback])</strong></p>
+
+<p>Asynchronously sets an Object <code>keyValue</code>. <code>keyValue</code> is defined below in the example. <code>callback</code> is optional, without parameters.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-s">var</span> keyValue <span class="pl-ko">=</span> {
+  <span class="pl-s1"><span class="pl-pds">'</span>hello<span class="pl-pds">'</span></span><span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>world<span class="pl-pds">'</span></span>,
+  <span class="pl-s1"><span class="pl-pds">'</span>buh<span class="pl-pds">'</span></span><span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>bye<span class="pl-pds">'</span></span>
+}
+storage.setMulti(keyValue, <span class="pl-s">function</span>() {
+  <span class="pl-c"><span class="pl-pdc">//</span> optional callback, do something here</span>
+});</pre></div>
+
+<p><strong>storey.get(key, callback)</strong></p>
+
+<p>Asynchronously gets a <code>key</code>. <code>callback</code> is filled with <code>value</code> parameter.</p>
+
+<div class="highlight highlight-javascript"><pre>storey.get(<span class="pl-s1"><span class="pl-pds">'</span>key<span class="pl-pds">'</span></span>, <span class="pl-s">function</span>(<span class="pl-vpf">value</span>) {
+  console<span class="pl-sf">.log</span>(value); <span class="pl-c"><span class="pl-pdc">//</span> do something with value</span>
+});</pre></div>
+
+<p><strong>storey.getSync(key)</strong></p>
+
+<p>Synchronously gets the value of <code>key</code>.</p>
+
+<p><strong>storey.getMulti(keys, callback)</strong></p>
+
+<p>Asynchronously gets an Array of values by using a <code>keys</code> Array.
+<code>callback</code> has Array <code>values</code> as parameter.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-s">var</span> keys <span class="pl-ko">=</span> [<span class="pl-s1"><span class="pl-pds">'</span>hello<span class="pl-pds">'</span></span>, <span class="pl-s1"><span class="pl-pds">'</span>foo<span class="pl-pds">'</span></span>];
+storage.getMulti(keys, <span class="pl-s">function</span>(<span class="pl-vpf">values</span>) {
+  <span class="pl-c"><span class="pl-pdc">//</span> do something with Array of values</span>
+});</pre></div>
+
+<p><strong>storey.remove(key, [callback])</strong></p>
+
+<p>Asynchronously removes the <code>key</code> from storage. <code>callback</code> is optional.</p>
+
+<p><strong>storey.removeSync(key)</strong></p>
+
+<p>Synchronously removes the <code>key</code> from storage.</p>
+
+<p><strong>storey.removeMulti(keys, [callback])</strong></p>
+
+<p>Asynchronously removes an Array of <code>keys</code> from storage. <code>callback</code> is optional.</p>
+
+<p><strong>storey.clear()</strong></p>
+
+<p>Caution! Approaching danger! Asynchronously clears up Web Storage.</p>
+
+<p><strong>storey.has(key, callback)</strong></p>
+
+<p>Purely a syntactic sugar for checking presence of <code>key</code>. Equivalent to <code>storey.get</code>.</p>
+
+<p><strong>storey.has()</strong></p>
+
+<p>Checks how much space is used by keys and values in storage.</p>
+
+<p><strong>storey.left()</strong></p>
+
+<p>Checks how much space is left in storage. 500 MB - <code>storey.has()</code>.</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>The MIT License. Look <a href="https://github.com/mavenave/storey.js/blob/master/README.md">here</a> for it.</p>
+
+<h2>
+<a id="contact" class="anchor" href="#contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contact</h2>
+
+<p>Like what you see here? I'm more than willing to receive Pull Requests. <img class="emoji" title=":smile:" alt=":smile:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f604.png" height="20" width="20" align="absmiddle"> I'm reachable at <a href="https://twitter.com/mavenave">@mavenave</a> and <a href="mailto:guanhao3797@gmail.com">guanhao3797@gmail.com</a>.</p>
+        </section>
+
+        <footer>
+          storey.js is maintained by <a href="https://github.com/mavenave">mavenave</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+                  <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-53448691-2");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+      </div>
+    </div>
+  </body>
+</html>
