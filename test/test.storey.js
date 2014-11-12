@@ -167,15 +167,16 @@ describe('Not in storage', function() {
   it('should return null', function(done) {
     storey.get('some unknown key', function(value) {
       (value === null).should.be.true;
+      done();
     });
-    done();
   });
 });
 
 describe('#clear()', function() {
   it('should clear perfectly', function(done) {
-    storey.clear();
-    done();
+    storey.clear(function() {
+      done();
+    });
   });
   // this clears out storage
   // and all is left for 'null' to be returned
@@ -186,16 +187,40 @@ describe('#clear()', function() {
         var type = types[i];
         storey.get(type, function(value) {
           (value === null).should.be.true;
+          done();
         });
       })(i);
     }
-    done();
   });
 });
 
 // for callbacks, this check is sufficient:
 // if (typeof callback === 'function') callback();
 
+// storage is clear, set new items
 describe('#forEach()', function() {
-  storage.set()
+  it('should do function on each item', function(done) {
+    storey.setMulti({
+      a: 1,
+      b: 2,
+      c: 3
+    });
+    storey.forEach(function(value) {
+      done();
+      return value * 2;
+    });
+    storey.getMulti(['a', 'b', 'c'], function(values) {
+      values[0].should.be.equal(2);
+      values[1].should.be.equal(4);
+      values[2].should.be.equal(6);
+    });
+  });
+});
+
+// lame tests for size
+describe('#left()', function() {
+  it('should be 500 MB - storey.size()', function() {
+    var MAX_SIZE = 1024 * 1024 * 5;
+    storey.left().should.be.equal(MAX_SIZE - storey.size());
+  });
 });
