@@ -2,20 +2,11 @@
 // undefined => error
 // NaN       => null
 // null      => null
+
+// Not supported objects/types:
+//  undefined, null, NaN, functions (can be .toStringed)
 var testSubjects = {
   // should not even work...
-  'undefined': {
-    subject: undefined,
-    result: undefined
-  },
-  'NaN': {
-    subject: NaN,
-    result: null
-  },
-  'null': {
-    subject: null,
-    result: null
-  },
   'number': {
     subject: 7,
     result: 7
@@ -29,10 +20,10 @@ var testSubjects = {
   // could be undergone toString first
   // but... who the hell uses localStorage
   // to store functions?
-  'function': {
+  /*'function': {
     subject: function(){},
     result: undefined
-  },
+  },*/
   'object': {
     subject: {test: 'object', sup: 'man'},
     result: {test: 'object', sup: 'man'}
@@ -83,38 +74,49 @@ describe('#remove()', function() {
 // now that basic functions are nailed,
 // do a variation of types inserted and extracted
 describe('testing types (async)', function() {
-  var types = Object.keys(testSubjects), type, typeName;
+  var types = Object.keys(testSubjects);
   for (var i = 0; i < types.length; i++) {
-    typeName = types[i];
-    type = testSubjects[typeName];
-    it('should set ' + typeName, function(done) {
-      storey.set(typeName, type.subject, function() {
-        done();
+    // for localization of i in for loop
+    // if this is not done, async functions
+    // will just use last index in loop
+    (function(i) {
+      var typeName = types[i];
+      var type = testSubjects[typeName];
+      it('should set ' + typeName, function(done) {
+        storey.set(typeName, type.subject, function() {
+          done();
+        });
       });
-    });
-    it('should get ' + typeName, function(done) {
-      storey.get(typeName, function(value) {
-        value.should.equal(type.result);
-        done();
+      it('should get ' + typeName, function(done) {
+        storey.get(typeName, function(value) {
+          value.should.eql(type.result);
+          /*
+          if (typeof value === 'object') value.should.eql(type.result);
+          else value.should.equal(type.result);*/
+          done();
+        });
       });
-    });
+    })(i);
   }
 });
 
 // lame synchronous functions
 describe('testing types (sync)', function() {
-  var types = Object.keys(testSubjects), type, typeName;
+  var types = Object.keys(testSubjects);
   for (var i = 0; i < types.length; i++) {
-    typeName = types[i];
-    type = testSubjects[typeName];
-    var value;
-    it('should set ' + typeName, function() {
-      storey.setSync(typeName, type.subject);
-    });
-    it('should get ' + typeName, function() {
-      value = storey.getSync(typeName);
-      value.should.equal(type.result);
-    });
+    (function(i) {
+      var typeName = types[i];
+      var type = testSubjects[typeName];
+      var value;
+      it('should set ' + typeName, function() {
+        storey.setSync(typeName, type.subject);
+      });
+      it('should get ' + typeName, function() {
+        value = storey.getSync(typeName);
+        // use eql to check for contents
+        value.should.eql(type.result);
+      });
+  })(i);
   }
 });
 
@@ -136,7 +138,7 @@ describe('#setMulti()', function() {
     var is = storey.getSync('this');
     var right = storey.getSync('amazing');
     var yeah = storey.getSync('oh');
-    is.should.equal('this');
+    is.should.equal('is');
     right.should.equal('right');
     yeah.should.equal('yeah');
   });
@@ -165,3 +167,6 @@ describe('#removeMulti()', function() {
     });
   });
 });
+
+// Clears up every time
+// localStorage.clear();

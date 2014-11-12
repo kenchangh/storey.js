@@ -92,11 +92,12 @@ function async(func) {
  */
 function parseIfPossible(obj) {
   try {
-    // string will become 'string'
+    /*
+    // 'string' will become "'string'"
     obj = typeof obj === 'string'
       ? obj
-      : JSON.parse(obj);
-    return obj;
+      : JSON.parse(obj);*/
+    return JSON.parse(obj);
   } catch(e) {
     return obj;
   }
@@ -139,6 +140,7 @@ function stringifyIfPossible(obj) {
  */
 // FIXME
 // Apparently this runs really slow, at 88ms
+// NOW at 120ms....
 storage.set = function setStorage(key, value, callback) {
   value = stringifyIfPossible(value);
   async(setItem).run(key, value, function(){
