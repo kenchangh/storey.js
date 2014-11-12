@@ -201,6 +201,9 @@ storage.get = function getStorage(key, callback) {
   });
 };
 
+// For syntactic sugar
+storage.has = storage.get;
+
 /*
  * Wrapper function for localStorage.setItem
  * which just deserializes to string.
@@ -350,6 +353,6 @@ storage.left = function getStorageLeft() {
   return MAX_SIZE - this.size();
 };
 
-window.storage = storage;
+window.storey = storage;
 
 })();  // storage.js encapsulation
