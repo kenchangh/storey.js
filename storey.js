@@ -58,27 +58,17 @@ function async(func) {
     var callback = args.pop();
     asyncFunc.status = PENDING;
     // Pushes it to background with 0ms delay
-    var funcToBackground = setTimeout(function() {
+    setTimeout(function() {
       try {
         var result = func.apply(this, args);
+        callback(result);
         asyncFunc.status = SUCCESS;
         asyncFunc.result = result;
       } catch(e) {
         asyncFunc.status = FAIL;
-        asyncFunc.result = e;
+        callback(e);
       }
     }, 0);
-    // Runs continuously checking for status of asyncFunc
-    // Runs after-task attached at asyncFunc.done
-    var asyncFuncChecker = setInterval(function() {
-      var status = asyncFunc.status;
-      if (status === SUCCESS || status === FAIL) {
-        clearInterval(asyncFuncChecker);
-        callback(asyncFunc.result);
-      }
-    }, 0);
-    // Attached to returned asyncFunc.done
-    return asyncFunc;
   };
   return asyncFunc;
 }
@@ -170,18 +160,15 @@ storage.setSync = function(key, value) {
 storage.setMulti = function(keyValue, callback) {
   var keys = Object.keys(keyValue);
   var counter = 0;
-  function incrementCounter() { counter++; }
+  function incrementCounter() {
+    counter++;
+    if (counter === keys.length) callback();
+  }
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
     var value = keyValue[key];
     storage.set(key, value, incrementCounter);
   }
-  var counterChecker = setInterval(function() {
-    if (counter === keys.length) {
-      clearInterval(counterChecker);
-      if (callback) callback();
-    }
-  }, 0);
 };
 
 /*
@@ -229,18 +216,12 @@ storage.getMulti = function getMultiStorage(keys, callback) {
   var values = [];
   function rememberValue(value) {
     values.push(parseIfPossible(value));
+    if (values.length === keys.length) callback(values);
   }
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
     storage.get(key, rememberValue);
   }
-  // Continuously check for function completion
-  var counterChecker = setInterval(function() {
-    if (values.length === keys.length) {
-      clearInterval(counterChecker);
-      callback(values);
-    }
-  }, 0);
 };
 
 /*
@@ -279,17 +260,14 @@ storage.removeSync = function removeSyncStorage(key) {
  */
 storage.removeMulti = function removeMultiStorage(keys, callback) {
   var counter = 0;
-  function incrementCounter() { counter++; }
+  function incrementCounter() {
+    counter++;
+    if (counter === keys.length) callback();
+  }
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
     storage.remove(key, incrementCounter);
   }
-  var counterChecker = setInterval(function() {
-    if (counter === keys.length) {
-      clearInterval(counterChecker);
-      callback();
-    }
-  });
 };
 
 /*
